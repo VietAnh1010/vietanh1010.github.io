@@ -1,41 +1,40 @@
-name: Deploy Hakyll Site
+name: Deploy from gh-pages
 
 on:
   push:
     branches:
-      - main
+      - gh-pages
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout gh-pages
         uses: actions/checkout@v4
-
-      - name: Set up Haskell
-        uses: haskell-actions/setup@v2
         with:
-          ghc-version: '9.10' # Adjust as needed
-          cabal-version: 'latest'
+          ref: gh-pages
 
-      - name: Cache
-        uses: actions/cache@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: |
-            ~/.cabal/store
-            dist-newstyle
-          key: ${{ runner.os }}-haskell-${{ hashFiles('**/*.cabal') }}
-          restore-keys: |
-            ${{ runner.os }}-haskell-
-
-      - name: Build site generator
-        run: cabal build
-
-      - name: Generate site
-        run: cabal run site -- build
+          path: . # Content is already in the root of gh-pages
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_site
+        id: deployment
+        uses: actions/deploy-pages@v4
