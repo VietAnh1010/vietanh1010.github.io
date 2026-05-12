@@ -15,12 +15,14 @@ main = hakyll $ do
     route idRoute
     compile compressCssCompiler
 
-  match (fromList ["about.md", "contact.md", "publications.md"]) $ do
+  match "publications.md" $ do
     route $ setExtension "html"
     compile $
       pandocCompiler
         >>= loadAndApplyTemplate "templates/default.html" defaultContext
         >>= relativizeUrls
+
+  match "about-contact.md" $ compile pandocCompiler
 
   match "posts/*.md" $ do
     route $ setExtension "html"
@@ -48,8 +50,10 @@ main = hakyll $ do
     route idRoute
     compile $ do
       posts <- recentFirst =<< loadAll "posts/*.md"
+      aboutContent <- loadBody "about-contact.md"
       let indexCtx =
             listField "posts" postCtx (pure posts)
+              <> field "about" (const $ return aboutContent)
               <> defaultContext
 
       getResourceBody

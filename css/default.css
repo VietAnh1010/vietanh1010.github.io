@@ -39,6 +39,31 @@ h2 {
   font-size: 2rem;
 }
 
+.profile-header {
+  display: flex;
+  gap: 3rem;
+  margin-bottom: 2rem;
+  align-items: flex-start;
+}
+
+.profile-pic {
+  width: 20rem;
+  height: auto;
+  border-radius: 0.8rem;
+}
+
+.bio {
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+
 article .header {
   font-size: 1.4rem;
   font-style: italic;
