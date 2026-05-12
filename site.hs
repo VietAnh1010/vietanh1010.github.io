@@ -1,10 +1,36 @@
---------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
 
-import Data.Monoid (mappend)
 import Hakyll
+  ( Context,
+    applyAsTemplate,
+    compile,
+    compressCssCompiler,
+    constField,
+    copyFileCompiler,
+    create,
+    dateField,
+    defaultContext,
+    field,
+    getResourceBody,
+    hakyll,
+    idRoute,
+    listField,
+    loadAll,
+    loadAndApplyTemplate,
+    loadBody,
+    makeItem,
+    match,
+    pandocCompiler,
+    recentFirst,
+    relativizeUrls,
+    route,
+    setExtension,
+    templateBodyCompiler,
+  )
 
---------------------------------------------------------------------------------
+postCtx :: Context String
+postCtx = dateField "date" "%B %e, %Y" <> defaultContext
+
 main :: IO ()
 main = hakyll $ do
   match "images/*" $ do
@@ -49,11 +75,9 @@ main = hakyll $ do
   match "index.html" $ do
     route idRoute
     compile $ do
-      posts <- recentFirst =<< loadAll "posts/*.md"
       aboutContent <- loadBody "about-contact.md"
       let indexCtx =
-            listField "posts" postCtx (pure posts)
-              <> field "about" (const $ return aboutContent)
+            field "about" (const $ pure aboutContent)
               <> defaultContext
 
       getResourceBody
@@ -62,9 +86,3 @@ main = hakyll $ do
         >>= relativizeUrls
 
   match "templates/*" $ compile templateBodyCompiler
-
---------------------------------------------------------------------------------
-postCtx :: Context String
-postCtx =
-  dateField "date" "%B %e, %Y"
-    <> defaultContext
