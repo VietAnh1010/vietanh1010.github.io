@@ -12,44 +12,46 @@ We assume extensionality of functions.
 We assume the existence of a relation `dist` between two elements `x` and `y` of the same type, parameterized by a level (a natural number). This relation captures the notion of approximate equality: `x` and `y` may not be exactly equal, but they may be "approximately equal" at level `n`. The higher the level is, the more precise the approximation.
 
 We write `x ={n}= y` to mean that `x` is related to `y` in the `dist` relation at level `n`. We assume the following properties of `dist`:
+
 - `dist`, instantiated with a type `A` and a level `n`, is an equivalence relation:
 
-```rocq
-Instance dist_Equivalence A (n : nat) : Equivalence (@dist A n).
-```
+  ```rocq
+  Instance dist_Equivalence A (n : nat) : Equivalence (@dist A n).
+  ```
 
 - `dist` is downward closed. If `x` is approximately equal to `y` at some high level `n`, then they should also be approximately equal at some lower level `m`. Intuitively, the approximation at level `m` is less precise than the approximation at level `n`, thus approximate equality at level `m` is less able to "distinguish" two elements:
 
-```rocq
-Axiom dist_le : forall {A} (n m : nat) (x y : A), m <= n -> x ={n}= y -> x ={m}= y.
-```
+  ```rocq
+  Axiom dist_le : forall {A} (n m : nat) (x y : A), m <= n -> x ={n}= y -> x ={m}= y.
+  ```
 
 - At the limit, `dist` and standard equality agree:
 
-```rocq
-Axiom eq_dist : forall {A} (x y : A), x = y <-> forall n, x ={n}= y.
-```
+  ```rocq
+  Axiom eq_dist : forall {A} (x y : A), x = y <-> forall n, x ={n}= y.
+  ```
 
 - Extensionality of `dist`:
 
-```rocq
-Axiom dist_ext : forall {A B} (n : nat) (f g : A -> B), f ={n}= g <-> forall x, f x ={n}= g x.
-```
+  ```rocq
+  Axiom dist_ext : forall {A B} (n : nat) (f g : A -> B), f ={n}= g <-> forall x, f x ={n}= g x.
+  ```
 
 With the relation `dist`, we define two properties on functions:
-- A *non-expansive* function maps inputs that are approximately equal at some level `n` to outputs that are still approximately equal at level `n`:
 
-```rocq
-Class NonExpansive {A B} (f : A -> B) : Prop :=
-  f_ne (n : nat) (x y : A) : x ={n}= y -> f x ={n}= f y.
-```
+- A _non-expansive_ function maps inputs that are approximately equal at some level `n` to outputs that are still approximately equal at level `n`:
 
-- A *contractive* function maps inputs that are approximately equal at some level `n` to outputs that are approximately equal at level `S n`. For the exceptional case where the outputs are checked at level `0`, we stipulate that they are approximately equal, regardless of the inputs (there is no level before `0`):
+  ```rocq
+  Class NonExpansive {A B} (f : A -> B) : Prop :=
+    f_ne (n : nat) (x y : A) : x ={n}= y -> f x ={n}= f y.
+  ```
 
-```rocq
-Class Contractive {A B} (f : A -> B) : Prop :=
-  f_contractive : forall (n : nat) (x y : A), (forall m, m < n -> x ={m}= y) -> f x ={n}= f y.
-```
+- A _contractive_ function maps inputs that are approximately equal at some level `n` to outputs that are approximately equal at level `S n`. For the exceptional case where the outputs are checked at level `0`, we stipulate that they are approximately equal, regardless of the inputs (there is no level before `0`):
+
+  ```rocq
+  Class Contractive {A B} (f : A -> B) : Prop :=
+    f_contractive : forall (n : nat) (x y : A), (forall m, m < n -> x ={m}= y) -> f x ={n}= f y.
+  ```
 
 Generalizing non-expansive and contractive to functions that accept multiple inputs (`NonExpansive2`, `NonExpansive3`, `Contractive2`) is straightforward: apply the property point-wise on each input.
 
@@ -64,37 +66,37 @@ Note that the profunctor `F` is contravariant in its first input type, and covar
 
 - `dimap` preserves identity functions:
 
-```rocq
-Axiom dimap_id : forall {A B} (m : F A B), dimap (fun x => x) (fun x => x) m = m.
-```
+  ```rocq
+  Axiom dimap_id : forall {A B} (m : F A B), dimap (fun x => x) (fun x => x) m = m.
+  ```
 
 - `dimap` preserves composition of functions:
 
-```rocq
-Axiom dimap_comp :
-  forall {A1 A2 A3 B1 B2 B3}
-         (f : A3 -> A2)
-         (g : A2 -> A1)
-         (h : B1 -> B2)
-         (k : B2 -> B3)
-         (m : F A1 B1),
-    dimap (fun x => g (f x)) (fun x => k (h x)) m =
-    dimap f k (dimap g h m).
-```
+  ```rocq
+  Axiom dimap_comp :
+    forall {A1 A2 A3 B1 B2 B3}
+           (f : A3 -> A2)
+           (g : A2 -> A1)
+           (h : B1 -> B2)
+           (k : B2 -> B3)
+           (m : F A1 B1),
+      dimap (fun x => g (f x)) (fun x => k (h x)) m =
+      dimap f k (dimap g h m).
+  ```
 
 We also assume that `dimap` interacts nicely with `dist`:
 
 - `dimap` is non-expansive in all three arguments:
 
-```rocq
-Axiom dimap_NonExpansive3 : forall {A1 A2 B1 B2}, NonExpansive3 (@dimap A1 A2 B1 B2).
-```
+  ```rocq
+  Axiom dimap_NonExpansive3 : forall {A1 A2 B1 B2}, NonExpansive3 (@dimap A1 A2 B1 B2).
+  ```
 
 - `dimap` is contractive in the first two arguments:
 
-```rocq
-Axiom dimap_Contractive2 : forall {A1 A2 B1 B2}, Contractive2 (@dimap A1 A2 B1 B2).
-```
+  ```rocq
+  Axiom dimap_Contractive2 : forall {A1 A2 B1 B2}, Contractive2 (@dimap A1 A2 B1 B2).
+  ```
 
 We further assume the existence of an inhabitant of the type `F unit unit`, which will be used as a "default value" in later constructions:
 
@@ -140,27 +142,28 @@ with down (k : nat) : approx (S k) -> approx k :=
 ```
 
 The two functions `up` and `down` are mutually recursive:
+
 - When `k = 0`, `up` returns an object of type `approx 1 = F unit unit`. We rely on the assumption that there is an `inhabitant` of this type - we return that `inhabitant` (if we do not assume this, then we cannot return an object of type `F unit unit` and we are stuck).
 - When `k = 0`, `down` must return an object of type `approx 0 = unit`. The only inhabitant of that type is `tt`.
 - When `k = S k'`, `up` takes an object `x` of type `approx (S k') = F (approx k') (approx k')` and returns an object of type `approx (S (S k')) = F (approx (S k')) (approx (S k'))`. We use `dimap` with `down k'` in the first argument to adapt an `approx (S k')` into an `approx k'`, letting `x` consume it. `x` produces an `approx k'`, which we adapt back to `approx (S k')` using `dimap` with `up k'` in the second argument.
 
-```
-approx (S k') ---+----- F (approx (S k')) (approx (S k')) -----+--- approx (S k')
-                  \                                           /
-                   \ down k'                                 / up k'
-                    \                                       /
-                     +----- F (approx k') (approx k') -----+
-```
+  ```
+  approx (S k') ---+----- F (approx (S k')) (approx (S k')) -----+--- approx (S k')
+                    \                                           /
+                     \ down k'                                 / up k'
+                      \                                       /
+                       +----- F (approx k') (approx k') -----+
+  ```
 
-- When `k = S k'`, `down` takes an object of type `approx (S (S k')) = F (approx (S k')) (approx (S k'))` and returns an object of type `approx (S k') = F (approx k') (approx k')`. We follow a similar strategy as above, *mutatis mutandis*.
+- When `k = S k'`, `down` takes an object of type `approx (S (S k')) = F (approx (S k')) (approx (S k'))` and returns an object of type `approx (S k') = F (approx k') (approx k')`. We follow a similar strategy as above, _mutatis mutandis_.
 
-```
-                 +--- F (approx (S k')) (approx (S k')) ---+
-                /                                           \
-               / up k'                                       \ down k'
-              /                                               \
-approx k' ---+----------- F (approx k') (approx k') -----------+--- approx k'
-```
+  ```
+                   +--- F (approx (S k')) (approx (S k')) ---+
+                  /                                           \
+                 / up k'                                       \ down k'
+                /                                               \
+  approx k' ---+----------- F (approx k') (approx k') -----------+--- approx k'
+  ```
 
 Moving up and then moving down does not lose information, whereas moving down and then moving up again only recovers the original object approximately, up to a lower level:
 
@@ -190,6 +193,7 @@ Fixpoint down_iter (n k : nat) : approx (n + k) -> approx k :=
 ### Moving between arbitrary approximation levels
 
 With `up_iter` and `down_iter`, we can move an object between arbitrary approximation levels. Given `x : approx m` and a target level `n`, we define a `shift` operation as follows:
+
 - If `m <= n`, we move `x` up by `n - m` levels.
 - Otherwise, `n < m`, and we move `x` down by `m - n` levels.
 
@@ -209,7 +213,7 @@ If we try this, we get the following error message:
 The term "up_iter (n - m) m x" has type "approx (n - m + m)" while it is expected to have type "approx n".
 ```
 
-Even though `n - m + m` and `n` are *provably equal* when `m <= n`, they are not *definitionally equal*, and thus we cannot use `up_iter (n - m) m x` as an object of type `approx n`. The same problem also happens in the second branch of the match. Therefore, we need to define a `cast` function that can cast an object of type `approx m` to an object of type `approx n` given a proof that `m = n`:
+Even though `n - m + m` and `n` are _provably equal_ when `m <= n`, they are not _definitionally equal_, and thus we cannot use `up_iter (n - m) m x` as an object of type `approx n`. The same problem also happens in the second branch of the match. Therefore, we need to define a `cast` function that can cast an object of type `approx m` to an object of type `approx n` given a proof that `m = n`:
 
 ```rocq
 Definition cast (m n : nat) (H_eq : m = n) (x : approx m) : approx n :=
@@ -243,7 +247,7 @@ Coercion tower_car : tower >-> Funclass.
 
 This type formalizes our intuitions about the solution type in the previous sections: it represents a type of sequences in which each element lies at some approximation level and the sequence becomes increasingly precise, represented by the `down_tower` obligation.
 
-Equality and approximate equality on the solution type are *defined* extensionally, point-wise on the sequence of approximations:
+Equality and approximate equality on the solution type are _defined_ extensionally, point-wise on the sequence of approximations:
 
 ```rocq
 Axiom tower_eq : forall (s t : tower), s = t <-> forall k, s k = t k.
@@ -342,7 +346,7 @@ Record chain (A : Type) : Type :=
     cauchy (n i : nat) : n <= i -> chain_car i ={n}= chain_car n }.
 ```
 
-Even though elements in a chain become increasingly precise, they may not converge to a limit. A type `A` is *complete* if every chain of type `A` has a limit. The limit of a chain `c` is approximately equal to every element `c n` in the chain at level `n`, which is captured by the `compl_conv` obligation:
+Even though elements in a chain become increasingly precise, they may not converge to a limit. A type `A` is _complete_ if every chain of type `A` has a limit. The limit of a chain `c` is approximately equal to every element `c n` in the chain at level `n`, which is captured by the `compl_conv` obligation:
 
 ```rocq
 Class Complete A : Type :=
@@ -450,16 +454,24 @@ By applying `eq_dist` and unfolding `unroll`, we get:
 compl (unroll_chain (roll m)) ={n}= m
 ```
 
-We replace the LHS with the `n`-th chain element using `compl_conv`, then simplify, then fuse the `dimap` applications using `dimap_comp`. We also rewrite the RHS using `dimap_id` to replace `m` with `dimap (fun x => x) (fun x => x) m`. Since both sides now share the same last argument `m`, we apply `dist_ext` to remove it. After these steps, the goal reduces to:
+We replace the LHS with the `n`-th chain element using `compl_conv`, then simplify, then fuse the `dimap` applications using `dimap_comp`. We also rewrite the RHS using `dimap_id` to replace `m` with `dimap (fun t => t) (fun t => t) m`. Since both sides now share the same last argument `m`, we apply `dist_ext` to remove it. After these steps, the goal reduces to:
 
 ```rocq
-dimap (fun x => embed (S n) (up n (proj n x))) (fun x => embed n (down n (proj (S n) x))) ={n}=
-dimap (fun x => x) (fun x => x).
+dimap (fun t => embed (S n) (up n (proj n t))) (fun t => embed n (down n (proj (S n) t))) ={n}=
+dimap (fun t => t) (fun t => t).
 ```
 
 This goal is discharged by contractivity of `dimap`:
+
 - If `n = 0`, the goal is trivial because at level `0`, the LHS is approximately equal to the RHS regardless of the functions involved.
-- If `n = S n'`, the goal reduces to showing that `(fun x => embed (S (S n')) (up (S n') (proj (S n') x))) ={n'}= (fun x => x)` and `(fun x => embed (S n') (down (S n') (proj (S (S n')) x))) ={n'}= (fun x => x)`. Both goals follow from `dist_ext`, `embed_up`, `down_proj`, and `embed_proj`.
+- If `n = S n'`, further applications of `dist_ext` reduces the goal to two equations that must hold for all `t : tower`:
+
+  ```rocq
+  1: embed (S (S n')) (up (S n') (proj (S n') t)) ={n'}= t
+  2: embed (S n') (down (S n') (proj (S (S n')) t)) ={n'}= t
+  ```
+
+  Both equations follow from `embed_up`, `down_proj`, and `embed_proj`.
 
 The original proof in Iris is slightly different: it uses `compl_conv` and `cauchy` to replace the LHS with the `S n`-th chain element instead, and then uses non-expansiveness of `dimap` to discharge the goal. That approach also works, though replacing the LHS with the `S n`-th element is a less natural first step compared to using the `n`-th element as we do here.
 
@@ -496,7 +508,7 @@ Using this lemma, we replace the `dimap` expression with `shift (S n) (S k) (t (
 
 We now look at the `dimap_shift_shift` lemma in more detail. The lemma states that applying `dimap` with `shift m n` and `shift n m` to an object `x` of type `approx (S n)` is approximately equal to applying a single `shift (S n) (S m)` to `x`. This lemma expresses the compatibility of `dimap` with the `shift` operation, and it has two main cases, depending on whether we are moving up or down (the mechanized proof has more cases, but those cases are trivial):
 
-- If `m < n` (moving down), we need to prove that:
+**Case 1:** `m < n` (moving down), we need to prove that:
 
 ```rocq
 dimap
@@ -527,13 +539,13 @@ We can illustrate this lemma with a diagram. The LHS applies `dimap` to descend 
 
 ```
 +---------+   +---------+                 <- approx (S (n + k)) ~ approx (n + S k)
-|         |   |   ///   |                               |               |
+|         |   |   ///   |                             |                 |
 +---------+   +---------+                 <- approx (n + k)             |
-|   ///   |   |   ///   |                     |         |               | down_iter n (S k)
-+---------+   +---------+                     +- dimap -+               |
-|   ///   |   |   ///   |                     |         v               |
+|   ///   |   |   ///   |                    ^|       |                 | down_iter n (S k)
++---------+   +---------+                    || dimap |                 |
+|   ///   |   |   ///   |                    ||       v                 |
 +---------+   +---------+   +---------+   <- approx (S k) <-------------+
-|   ///   |   |         |   |         |       v
+|   ///   |   |         |   |         |      |v
 +---------+   +---------+   +---------+   <- approx k
 |         |   |         |   |         |
 |   ...   |   |   ...   |   |   ...   |
@@ -547,7 +559,7 @@ Lemma dimap_cast_cast (m n : nat) (H_eq1 : m = n) (H_eq2 : n = m) (H_eq3 : S n =
   dimap (cast m n H_eq1) (cast n m H_eq2) x = cast (S n) (S m) H_eq3 x.
 ```
 
-- If `n < m` (moving up), we need to prove that:
+**Case 2:** `n < m` (moving up), we need to prove that:
 
 ```rocq
 dimap
@@ -576,13 +588,13 @@ We again illustrate this lemma with a diagram. The LHS applies `dimap` to descen
 
 ```
               +---------+   +---------+   <- approx (S (n + k)) ~ approx (n + S k)
-              |         |   |   ***   |                 ^               ^
+              |         |   |   ***   |               ^                 ^
               +---------+   +---------+   <- approx (n + k)             |
-              |   ***   |   |   ***   |       ^         |               | up_iter n (S k)
-              +---------+   +---------+       +- dimap -+               |
-              |   ***   |   |   ***   |       |         |               |
+              |   ***   |   |   ***   |      |^       |                 | up_iter n (S k)
+              +---------+   +---------+      || dimap |                 |
+              |   ***   |   |   ***   |      ||       |                 |
 +---------+   +---------+   +---------+   <- approx (S k) --------------+
-|         |   |   ***   |   |         |       |
+|         |   |   ***   |   |         |      v|
 +---------+   +---------+   +---------+   <- approx k
 |         |   |         |   |         |
 |   ...   |   |   ...   |   |   ...   |
@@ -591,16 +603,18 @@ We again illustrate this lemma with a diagram. The LHS applies `dimap` to descen
 
 ### A deeper look: category theory and type theory
 
+The constructions in this post have a rich categorical and type-theoretic structure, which we explore in this section.
+
 #### A categorical perspective on `cast`
 
 The `cast` function was originally introduced as a technical device to fix type mismatches: given a proof that `m = n`, it coerces an element of `approx m` into an element of `approx n`. But a closer look at `cast` reveals a surprisingly elegant categorical structure, with connections to **homotopy type theory (HoTT)**.
 
 The key insight is to think in terms of two categories:
 
-- The **category of paths**, whose objects are natural numbers and whose morphisms from `m` to `n` are proofs of equality `m = n`. The name *paths* comes from HoTT, where equalities are interpreted as paths in a space.
+- The **category of `nat`**, whose objects are natural numbers and whose morphisms from `m` to `n` are proofs of equality `m = n`. In fact, every morphism is invertible by symmetry of equality, making this a groupoid rather than merely a category. In HoTT, this is called the **fundamental groupoid of `nat`**, and equalities in this groupoid are interpreted as _paths_ in a space.
 - The **category of types**, whose objects are types and whose morphisms are functions between them.
 
-Given `f g : nat -> nat`, the assignments `fun i => approx (f i)` and `fun i => approx (g i)` are functors from the category of paths to the category of types: they send each object `i` (a natural number) to a type, and they send each morphism `H_eq : m = n` to a function between types via `cast` - specifically, `cast (f m) (f n) (f_equal f H_eq)` for the functor `fun i => approx (f i)`, and similarly for `g`. This is exactly the role `cast` plays when composed with `f_equal`: it lifts a morphism in the category of paths to a morphism in the category of types.
+Given `f g : nat -> nat`, the assignments `fun i => approx (f i)` and `fun i => approx (g i)` are functors from the fundamental groupoid of `nat` to the category of types: they send each object `i` (a natural number) to a type, and they send each morphism `H_eq : m = n` to a function between types via `cast` - specifically, `cast (f m) (f n) (f_equal f H_eq)` for the functor `fun i => approx (f i)`, and similarly for `g`. This is exactly the role `cast` plays when composed with `f_equal`: it lifts a morphism in the fundamental groupoid of `nat` to a morphism in the category of types.
 
 A family `eta : forall i, approx (f i) -> approx (g i)` is then a natural transformation between the two functors, with `eta i` being the component at object `i`. Naturality says that `eta` commutes with the action of the functors on morphisms, i.e., lifting a path `H_eq : m = n` before or after applying `eta` gives the same result:
 
@@ -622,7 +636,7 @@ UIP_nat : forall (m n : nat) (H1 H2 : m = n), H1 = H2
 
 In Rocq, proof irrelevance does not hold for arbitrary propositions. However, equality on `nat` is decidable, and decidable equality implies UIP (by the **Hedberg theorem**). UIP lets us treat any two proofs of the same equality `m = n` as interchangeable, so equational reasoning about `cast` and `shift` goes through without getting stuck on proof-term mismatches.
 
-Connecting back to the previous section: the morphisms in the category of paths over `nat` are proofs of equality, and UIP says there is at most one such proof between any two natural numbers. In HoTT terms, this means `nat` is a **set** - a type whose path spaces are all mere propositions, also known as a type of **h-level 2** (where h-level 0 is a contractible type, h-level 1 is a mere proposition, and h-level 2 is a set). In categorical terms, this makes the category of paths over `nat` a **thin category** - a category where there is at most one morphism between any two objects. Readers interested in the deeper connections between type theory and category theory are encouraged to explore these concepts further.
+Connecting back to the previous section: the morphisms in the fundamental groupoid of `nat` are proofs of equality, and UIP says there is at most one such proof between any two natural numbers. In HoTT terms, this means `nat` is a **set** - a type whose path spaces are all mere propositions, also known as a type of **h-level 2** (where h-level 0 is a contractible type, h-level 1 is a mere proposition, and h-level 2 is a set). In categorical terms, this makes the fundamental groupoid of `nat` a **thin category** - a category where there is at most one morphism between any two objects. Readers interested in the deeper connections between type theory and category theory are encouraged to explore these concepts further.
 
 ### Resources
 
