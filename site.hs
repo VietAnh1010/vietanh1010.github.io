@@ -41,6 +41,10 @@ main = hakyll $ do
     route idRoute
     compile compressCssCompiler
 
+  match "rocq/*" $ do
+    route idRoute
+    compile copyFileCompiler
+
   match "publications.md" $ do
     route $ setExtension "html"
     compile $
