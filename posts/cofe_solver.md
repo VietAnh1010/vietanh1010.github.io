@@ -5,6 +5,10 @@ date: 2026-05-13
 
 We present a didactic version of the COFE solver presented in Iris.
 
+### Resources
+
+[The Rocq mechanization of this post](/rocq/cofe_solver.v).
+
 ### Assumptions
 
 We assume extensionality of functions.
@@ -464,11 +468,11 @@ dimap (fun t => t) (fun t => t).
 This goal is discharged by contractivity of `dimap`:
 
 - If `n = 0`, the goal is trivial because at level `0`, the LHS is approximately equal to the RHS regardless of the functions involved.
-- If `n = S n'`, further applications of `dist_ext` reduces the goal to two equations that must hold for all `t : tower`:
+- If `n = S n'`, further applications of `dist_ext` reduce the goal to two equations that must hold for all `t : tower`:
 
   ```rocq
-  1: embed (S (S n')) (up (S n') (proj (S n') t)) ={n'}= t
-  2: embed (S n') (down (S n') (proj (S (S n')) t)) ={n'}= t
+  embed (S (S n')) (up (S n') (proj (S n') t)) ={n'}= t
+  embed (S n') (down (S n') (proj (S (S n')) t)) ={n'}= t
   ```
 
   Both equations follow from `embed_up`, `down_proj`, and `embed_proj`.
@@ -614,7 +618,7 @@ The key insight is to think in terms of two categories:
 - The **category of `nat`**, whose objects are natural numbers and whose morphisms from `m` to `n` are proofs of equality `m = n`. In fact, every morphism is invertible by symmetry of equality, making this a groupoid rather than merely a category. In HoTT, this is called the **fundamental groupoid of `nat`**, and equalities in this groupoid are interpreted as _paths_ in a space.
 - The **category of types**, whose objects are types and whose morphisms are functions between them.
 
-Given `f g : nat -> nat`, the assignments `fun i => approx (f i)` and `fun i => approx (g i)` are functors from the fundamental groupoid of `nat` to the category of types: they send each object `i` (a natural number) to a type, and they send each morphism `H_eq : m = n` to a function between types via `cast` - specifically, `cast (f m) (f n) (f_equal f H_eq)` for the functor `fun i => approx (f i)`, and similarly for `g`. This is exactly the role `cast` plays when composed with `f_equal`: it lifts a morphism in the fundamental groupoid of `nat` to a morphism in the category of types.
+Given `f : nat -> nat` and `g : nat -> nat`, the assignments `fun i => approx (f i)` and `fun i => approx (g i)` are functors from the fundamental groupoid of `nat` to the category of types: they send each object `i` (a natural number) to a type, and they send each morphism `H_eq : m = n` to a function between types via `cast` - specifically, `cast (f m) (f n) (f_equal f H_eq)` for the functor `fun i => approx (f i)`, and similarly for `g`. This is exactly the role `cast` plays when composed with `f_equal`: it lifts a morphism in the fundamental groupoid of `nat` to a morphism in the category of types.
 
 A family `eta : forall i, approx (f i) -> approx (g i)` is then a natural transformation between the two functors, with `eta i` being the component at object `i`. Naturality says that `eta` commutes with the action of the functors on morphisms, i.e., lifting a path `H_eq : m = n` before or after applying `eta` gives the same result:
 
@@ -637,7 +641,3 @@ UIP_nat : forall (m n : nat) (H1 H2 : m = n), H1 = H2
 In Rocq, proof irrelevance does not hold for arbitrary propositions. However, equality on `nat` is decidable, and decidable equality implies UIP (by the **Hedberg theorem**). UIP lets us treat any two proofs of the same equality `m = n` as interchangeable, so equational reasoning about `cast` and `shift` goes through without getting stuck on proof-term mismatches.
 
 Connecting back to the previous section: the morphisms in the fundamental groupoid of `nat` are proofs of equality, and UIP says there is at most one such proof between any two natural numbers. In HoTT terms, this means `nat` is a **set** - a type whose path spaces are all mere propositions, also known as a type of **h-level 2** (where h-level 0 is a contractible type, h-level 1 is a mere proposition, and h-level 2 is a set). In categorical terms, this makes the fundamental groupoid of `nat` a **thin category** - a category where there is at most one morphism between any two objects. Readers interested in the deeper connections between type theory and category theory are encouraged to explore these concepts further.
-
-### Resources
-
-[The Rocq mechanization of this post](/rocq/cofe_solver.v).
